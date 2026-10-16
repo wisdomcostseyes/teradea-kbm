@@ -1,4 +1,4 @@
-# Echoes of Teradea: Keyboard & Mouse
+﻿# Echoes of Teradea: Keyboard & Mouse
 
 Keyboard and mouse support, with matching on-screen key prompts, for **Harvest Moon: Echoes of Teradea** (Steam).
 
@@ -9,7 +9,7 @@ Powered by BepInEx and spite.
 In the year of our lord and savior 2023, Natsume shipped Harvest Moon: The Winds of Anthos on PC with a yellow
 banner on the store page that said *"requires a controller."* The keyboard, a device attached to every PC since before the first Harvest Moon
 existed, didn't count. People [complained](https://steamcommunity.com/app/2140650/discussions/0/6792047411326997218).
-A [mod](https://github.com/itsdanreed/woa-kbm) fixed it.
+A [mod](https://github.com/wisdomcostseyes/woa-kbm) fixed it.
 
 In the year of our lord and savior 2026 they did it again. Same banner, same engine, same fifty dollars, and the Steam forum had a thread
 titled "No keyboard and mouse support" two weeks *before* release. The response was to ship anyway.
@@ -31,7 +31,7 @@ evening, a decompiler and a text editor. When the patch notes do arrive, they wi
 The developers get the credit for the game. The keyboard gets its dignity back.
 
 Download: [Nexus Mods](https://www.nexusmods.com/harvestmoonechoesofteradea) or the
-[GitHub releases](https://github.com/itsdanreed/teradea-kbm/releases).
+[GitHub releases](https://github.com/wisdomcostseyes/teradea-kbm/releases).
 
 ## Install
 
