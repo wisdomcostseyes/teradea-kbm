@@ -114,7 +114,9 @@ namespace TeradeaKbm
         public readonly FixedEntry DpadLeft = new FixedEntry("leftArrow");
         public readonly FixedEntry DpadRight = new FixedEntry("rightArrow");
         public readonly FixedEntry LeftStick = new FixedEntry("w;s;a;d");
-        public readonly FixedEntry RightStick = new FixedEntry("upArrow;downArrow;leftArrow;rightArrow");
+        // The right stick is the camera in the field (that's the mouse) and pages/sub-tabs in menus, so it only
+        // gets left/right keys. Entries are up;down;left;right; an empty entry means no key for that direction.
+        public readonly FixedEntry RightStick = new FixedEntry(";;leftBracket;rightBracket");
 
         internal class FixedEntry
         {

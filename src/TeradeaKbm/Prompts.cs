@@ -24,11 +24,12 @@ namespace TeradeaKbm
             { "upArrow", "↑" }, { "downArrow", "↓" }, { "leftArrow", "←" }, { "rightArrow", "→" },
             { "leftButton", "LMB" }, { "rightButton", "RMB" }, { "middleButton", "MMB" },
             { "scroll/up", "Wheel↑" }, { "scroll/down", "Wheel↓" }, { "delta", "Mouse" },
+            { "leftBracket", "[" }, { "rightBracket", "]" }, { "semicolon", ";" }, { "quote", "'" }, { "comma", "," }, { "period", "." }, { "slash", "/" }, { "backslash", "\\" }, { "minus", "-" }, { "equals", "=" }, { "backquote", "`" },
         };
 
         public static string ForPath(string path)
         {
-            if (string.IsNullOrEmpty(path)) return "?";
+            if (string.IsNullOrEmpty(path)) return "";
             string name = path;
             int slash = path.IndexOf("/", StringComparison.Ordinal);
             if (path.StartsWith("<") && slash >= 0) name = path.Substring(slash + 1);
@@ -65,12 +66,12 @@ namespace TeradeaKbm
                 case "dpad": return Stick(cfg.DpadUp.Value, cfg.DpadDown.Value, cfg.DpadLeft.Value, cfg.DpadRight.Value);
                 case "dpad/ud": return ForPath(First(cfg.DpadUp.Value)) + ForPath(First(cfg.DpadDown.Value));
                 case "dpad/lr": return ForPath(First(cfg.DpadLeft.Value)) + ForPath(First(cfg.DpadRight.Value));
-                case "leftStick": { var p = KbmInjector.Split(cfg.LeftStick.Value).ToArray(); return p.Length == 4 ? Stick(p[0], p[1], p[2], p[3]) : "Move"; }
-                case "leftStick/ud": { var p = KbmInjector.Split(cfg.LeftStick.Value).ToArray(); return p.Length == 4 ? ForPath(p[0]) + "/" + ForPath(p[1]) : "Move"; }
-                case "leftStick/lr": { var p = KbmInjector.Split(cfg.LeftStick.Value).ToArray(); return p.Length == 4 ? ForPath(p[2]) + "/" + ForPath(p[3]) : "Move"; }
-                case "rightStick": { var p = KbmInjector.Split(cfg.RightStick.Value).ToArray(); return p.Length == 4 ? Stick(p[0], p[1], p[2], p[3]) : "Mouse"; }
-                case "rightStick/ud": { var p = KbmInjector.Split(cfg.RightStick.Value).ToArray(); return p.Length == 4 ? ForPath(p[0]) + ForPath(p[1]) : "Mouse"; }
-                case "rightStick/lr": { var p = KbmInjector.Split(cfg.RightStick.Value).ToArray(); return p.Length == 4 ? ForPath(p[2]) + ForPath(p[3]) : "Mouse"; }
+                case "leftStick": { var p = KbmInjector.SplitKeep(cfg.LeftStick.Value); return p.Length == 4 ? Stick(p[0], p[1], p[2], p[3]) : "Move"; }
+                case "leftStick/ud": { var p = KbmInjector.SplitKeep(cfg.LeftStick.Value); return p.Length == 4 ? ForPath(p[0]) + "/" + ForPath(p[1]) : "Move"; }
+                case "leftStick/lr": { var p = KbmInjector.SplitKeep(cfg.LeftStick.Value); return p.Length == 4 ? ForPath(p[2]) + "/" + ForPath(p[3]) : "Move"; }
+                case "rightStick": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? Stick(p[0], p[1], p[2], p[3]) : "Mouse"; }
+                case "rightStick/ud": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? ForPath(p[0]) + ForPath(p[1]) : "Mouse"; }
+                case "rightStick/lr": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? ForPath(p[2]) + " " + ForPath(p[3]) : "Mouse"; }
                 case "leftStick/up": return StickPart(cfg.LeftStick.Value, 0);
                 case "leftStick/down": return StickPart(cfg.LeftStick.Value, 1);
                 case "leftStick/left": return StickPart(cfg.LeftStick.Value, 2);
@@ -86,7 +87,7 @@ namespace TeradeaKbm
 
         private static string StickPart(string raw, int idx)
         {
-            var p = KbmInjector.Split(raw).ToArray();
+            var p = KbmInjector.SplitKeep(raw);
             return p.Length == 4 ? ForPath(p[idx]) : "?";
         }
 
@@ -94,6 +95,7 @@ namespace TeradeaKbm
         {
             string lu = ForPath(First(u)), ld = ForPath(First(d)), ll = ForPath(First(l)), lr = ForPath(First(r));
             if (lu == "↑") return "↑↓←→";
+            if (lu.Length == 0 && ld.Length == 0) return ll + " " + lr; // left/right only (e.g. "[ ]")
             string s = lu + ll + ld + lr;
             return s.Length <= 4 ? s : lu + "/" + ld + "/" + ll + "/" + lr;
         }

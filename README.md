@@ -6,12 +6,12 @@ Powered by BepInEx and spite.
 
 ## Why this exists
 
-In 2023 Natsume shipped Harvest Moon: The Winds of Anthos on PC with a yellow banner on the store page that said
-*"requires a controller."* The keyboard, a device attached to every PC since before the first Harvest Moon
+In the year of our lord and savior 2023, Natsume shipped Harvest Moon: The Winds of Anthos on PC with a yellow
+banner on the store page that said *"requires a controller."* The keyboard, a device attached to every PC since before the first Harvest Moon
 existed, didn't count. People [complained](https://steamcommunity.com/app/2140650/discussions/0/6792047411326997218).
 A [mod](https://github.com/itsdanreed/woa-kbm) fixed it.
 
-In October 2026 they did it again. Same banner, same engine, same fifty dollars, and the Steam forum had a thread
+In the year of our lord and savior 2026 they did it again. Same banner, same engine, same fifty dollars, and the Steam forum had a thread
 titled "No keyboard and mouse support" two weeks *before* release. The response was to ship anyway.
 
 Here is the part that should annoy you. The game's input asset contains a complete, bound, working
@@ -24,6 +24,9 @@ build, unreachable, since day one. This mod's core fix is clearing that list.
 The port carries the same lack of care elsewhere: no resolution or UI-scale settings, a UI sized for a handheld
 screen, and glyph assets lifted straight from the previous game. That last one did at least mean the key prompts
 from the previous mod carried over unchanged.
+
+For the record: this mod fixed the game's input before Natsume's first patch did anything at all. One person, one
+evening, a decompiler and a text editor. When the patch notes do arrive, they will say "bug fixes".
 
 The developers get the credit for the game. The keyboard gets its dignity back.
 
@@ -64,6 +67,7 @@ To uninstall, delete `BepInEx\plugins\TeradeaKbm`. To remove BepInEx too, delete
 | Camera reset / top-down view | **C** (or middle click) / **V** |
 | Menu / options | **Esc** |
 | Quick actions (d-pad), menu selectors, page switching | Arrow keys |
+| Sub-tabs / pages (right stick in menus) | **[** / **]** |
 | Walk instead of run | hold **Ctrl** |
 | Release the mouse cursor | hold **Alt** |
 

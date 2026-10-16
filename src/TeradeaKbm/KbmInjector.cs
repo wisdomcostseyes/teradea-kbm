@@ -270,8 +270,12 @@ namespace TeradeaKbm
                     var keys = StickKeys(control);
                     if (keys != null && Set(have, action.name).Add("stick:" + control))
                     {
-                        action.AddCompositeBinding("2DVector(mode=2)", b.interactions, null)
-                            .With("Up", keys[0], null).With("Down", keys[1], null).With("Left", keys[2], null).With("Right", keys[3], null);
+                        var syntax = action.AddCompositeBinding("2DVector(mode=2)", b.interactions, null);
+                        string[] partNames = { "Up", "Down", "Left", "Right" };
+                        for (int k = 0; k < 4; k++)
+                        {
+                            if (!string.IsNullOrEmpty(keys[k])) syntax = syntax.With(partNames[k], keys[k], null);
+                        }
                         added++;
                     }
                     continue;
@@ -330,11 +334,18 @@ namespace TeradeaKbm
                 case "dpad": raw = First(cfg.DpadUp.Value) + ";" + First(cfg.DpadDown.Value) + ";" + First(cfg.DpadLeft.Value) + ";" + First(cfg.DpadRight.Value); break;
                 default: return null;
             }
-            var parts = Split(raw).Select(ToPath).ToArray();
-            return parts.Length == 4 ? parts : null;
+            var parts = SplitKeep(raw).Select(p => p.Length == 0 ? "" : ToPath(p)).ToArray();
+            return parts.Length == 4 && parts.Any(p => p.Length > 0) ? parts : null;
         }
 
         private static string First(string raw) => Split(raw).FirstOrDefault() ?? "";
+
+        /// <summary>Like Split but keeps empty entries, for positional lists (up;down;left;right).</summary>
+        internal static string[] SplitKeep(string raw)
+        {
+            if (raw == null) return new string[0];
+            return raw.Split(';').Select(s => s.Trim()).ToArray();
+        }
 
         private static IEnumerable<string> KeysFor(string control)
         {
@@ -375,8 +386,8 @@ namespace TeradeaKbm
 
         private static string Pick(string raw, int idx)
         {
-            var parts = Split(raw).ToArray();
-            return idx < parts.Length ? parts[idx] : null;
+            var parts = SplitKeep(raw);
+            return idx < parts.Length && parts[idx].Length > 0 ? parts[idx] : null;
         }
 
         internal static IEnumerable<string> Split(string raw)
