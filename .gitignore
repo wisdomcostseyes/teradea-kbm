@@ -1,0 +1,9 @@
+bin/
+obj/
+dist/
+*.user
+reference/
+archive/
+tools/bepinex_be788/
+tools/bepinex_patched/
+*.zip
