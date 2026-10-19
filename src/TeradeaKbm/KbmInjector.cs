@@ -323,6 +323,9 @@ namespace TeradeaKbm
             return control;
         }
 
+        // "<Gamepad>/*" style wildcard bindings ("Any": press anything) get the keyboard's anyKey and the mouse buttons.
+        private static readonly string[] AnyKeyPaths = { "<Keyboard>/anyKey", "<Mouse>/leftButton", "<Mouse>/rightButton" };
+
         private static string[] StickKeys(string control)
         {
             var cfg = Plugin.Cfg;
@@ -377,6 +380,7 @@ namespace TeradeaKbm
                 case "rightStick/down": raw = Pick(cfg.RightStick.Value, 1); break;
                 case "rightStick/left": raw = Pick(cfg.RightStick.Value, 2); break;
                 case "rightStick/right": raw = Pick(cfg.RightStick.Value, 3); break;
+                case "*": return AnyKeyPaths;
                 default:
                     Plugin.Log.LogDebug("No KBM translation for gamepad control '" + control + "'");
                     return Enumerable.Empty<string>();

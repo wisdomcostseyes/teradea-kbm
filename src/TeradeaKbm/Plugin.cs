@@ -18,7 +18,7 @@ namespace TeradeaKbm
     {
         public const string GUID = "EchoesOfTeradea.KeyboardMouse";
         public const string NAME = "Echoes of Teradea Keyboard & Mouse";
-        public const string VERSION = "0.0.1";
+        public const string VERSION = "0.0.2";
 
         internal static new ManualLogSource Log;
         internal static KbmConfig Cfg;
@@ -143,10 +143,16 @@ namespace TeradeaKbm
                 "Lock and hide the mouse cursor while the game window is focused (needed for mouse look).");
             CursorUnlockKey = f.Bind("Mouse", "CursorUnlockHoldKey", "leftAlt",
                 "Hold this keyboard key to temporarily release the cursor. Empty disables.");
-            MouseLookActions = f.Bind("Mouse", "MouseLookActions", "LookMouse",
-                "Action names that receive <Mouse>/delta. LookMouse is the game's own (shipped but unreachable) mouse-look action.");
-            MouseSensitivity = f.Bind("Mouse", "Sensitivity", 0.5f,
-                "Scale applied to raw mouse delta (pixels per frame). The game's own unused binding used 0.5.");
+            MouseLookActions = f.Bind("Mouse", "MouseLookActions", "Look",
+                "Action names that receive <Mouse>/delta. 'Look' is the right-stick camera action, so the camera keeps its follow behaviour. 'LookMouse' is the game's own touch-style drag camera, which never follows the player (0.0.1 used it).");
+            MouseSensitivity = f.Bind("Mouse", "Sensitivity", 0.08f,
+                "Scale applied to raw mouse delta (pixels per frame) before it is fed to the camera as a stick value.");
+            // 0.0.1 defaulted to the drag camera; move users who still have those exact defaults to the new ones.
+            if (MouseLookActions.Value == "LookMouse" && Math.Abs(MouseSensitivity.Value - 0.5f) < 0.001f)
+            {
+                MouseLookActions.Value = "Look";
+                MouseSensitivity.Value = 0.08f;
+            }
             MouseInvertY = f.Bind("Mouse", "InvertY", false, "Invert vertical mouse look.");
 
             KbmPrompts = f.Bind("Prompts", "KeyboardPrompts", true,

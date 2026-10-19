@@ -856,30 +856,8 @@ namespace TeradeaKbm
             catch (Exception e) { Plugin.Log.LogWarning("Image.OnEnable hook failed: " + e.Message); }
         }
 
-        [HarmonyPatch(typeof(OperateGuideButton), nameof(OperateGuideButton.Initialize))]
-        [HarmonyPostfix]
-        private static void OperateGuideButton_Initialize_Postfix(OperateGuideButton __instance)
-        {
-            try
-            {
-                var imgs = __instance._iconImage;
-                if (imgs == null) return;
-                for (int i = 0; i < imgs.Count; i++) PromptOverlay.Consider(imgs[i]);
-            }
-            catch (Exception e) { Plugin.Log.LogWarning("OperateGuideButton hook failed: " + e.Message); }
-        }
-
-        [HarmonyPatch(typeof(OperateGuideHoldButton), nameof(OperateGuideHoldButton.Initialize))]
-        [HarmonyPostfix]
-        private static void OperateGuideHoldButton_Initialize_Postfix(OperateGuideHoldButton __instance)
-        {
-            try
-            {
-                var imgs = __instance._iconImage;
-                if (imgs == null) return;
-                for (int i = 0; i < imgs.Count; i++) PromptOverlay.Consider(imgs[i]);
-            }
-            catch (Exception e) { Plugin.Log.LogWarning("OperateGuideHoldButton hook failed: " + e.Message); }
-        }
+        // No patches on OperateGuideButton/OperateGuideHoldButton.Initialize: those take a CancellationToken by
+        // value, and the IL2CPP detour's struct marshalling crashed intermittently (access violation in
+        // il2cpp_runtime_invoke, reported on Nexus). The Image.sprite hook above already catches every glyph they set.
     }
 }

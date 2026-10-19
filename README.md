@@ -89,8 +89,9 @@ WASD cluster and an arrow cross. Mouse sensitivity and Y inversion are in the `[
 - **Why there's no keyboard support.** `InputSystem.settings.supportedDevices` is a whitelist of six gamepad
   layouts. Unity never creates keyboard or mouse devices. The mod clears it at startup, then disables the game's
   own keyboard bindings (via empty binding overrides) and adds its own from the config so remapping has one source
-  of truth. The game's `LookMouse` action is kept and fed `<Mouse>/delta` with the configured sensitivity, gated to
-  gameplay action sets.
+  of truth. The mouse delta is fed into the right-stick `Look` action (scaled, gated to gameplay action sets) so the
+  camera keeps its follow behaviour; the game's own `LookMouse` action is a touch-style drag camera that never
+  follows the player, which 0.0.1 used by mistake.
 - **Prompts.** Every glyph is a UI `Image` whose sprite is named `*icon_guide_*`. A hook on `Image.sprite` swaps in
   the matching blank shape from `keys\` (one PNG per original sprite name) and renders the key names into the boxes
   listed in the PNG's `.json` sidecar, using the game's own font. Text prompts use private-use font characters
@@ -111,6 +112,9 @@ WASD cluster and an arrow cross. Mouse sensitivity and Y inversion are in the `[
   both happen from the `InputSystemManager.Awake` prefix.
 - **Erasing bindings** through `BindingSyntax.Erase()` doesn't work through the interop (null reference inside
   IL2CPP). `ApplyBindingOverride(index, "")` does.
+- **Don't Harmony-patch methods that take structs by value** (e.g. `OperateGuideButton.Initialize` with its
+  `CancellationToken`): the detour's struct marshalling crashes intermittently with an access violation in
+  `il2cpp_runtime_invoke`. 0.0.1 did; 0.0.2 relies on the `Image.sprite` hook alone.
 
 ## Building
 
