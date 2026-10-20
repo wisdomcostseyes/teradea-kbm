@@ -182,11 +182,14 @@ foreach ($f in Get-ChildItem $Glyphs -Filter "*icon_guide_*.png" | Where-Object 
         # every shape sits where the source art sits: centred on the art's bounding box
 
         $labelControl = $control
-        if ($control -match '^rightStick(/(ud|lr))?$') {
+        if ($control -match '^rightStick(/(ud|lr))?$' -or $control -match 'StickPress$') {
             # right stick: one ring-sized round cap on the stick ring (arrows drawn above it in the art stay
             # out of the shape), labelled with the two arrows of the direction pair (tabs: left/right; lists: up/down)
             $w = [Math]::Min($box.RingW + 2, [Math]::Min($box.W, $box.H) - 4); $h = $w
             $x = $box.CX - $w / 2; $y = $box.CY - $h / 2
+            # on the 40x60 prompt slots the ring sits above its base; the eye reads ring+base as one blob level with
+            # the face buttons (centre 40.5), so put the cap there rather than on the ring centre
+            if ($box.W -eq 40 -and $box.H -eq 60) { $y = 40.5 - $h / 2 }
             if ($x -lt 2) { $x = 2 }; if ($y -lt 2) { $y = 2 }   # big rings (riding menu) must stay inside the canvas
             if ($x + $w -gt $box.W - 2) { $x = $box.W - 2 - $w }; if ($y + $h -gt $box.H - 2) { $y = $box.H - 2 - $h }
             $box.Round = $true
@@ -219,6 +222,7 @@ for ($i = 0; $i -lt $count; $i++) {
 }
 $sg.Dispose(); $sheet.Save($Preview); $sheet.Dispose()
 Write-Host "preview: $Preview"
+
 
 
 
