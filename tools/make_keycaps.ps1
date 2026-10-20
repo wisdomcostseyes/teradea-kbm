@@ -55,11 +55,8 @@ function Get-Control([string]$name) {
 function Get-Cluster([string]$control) {
     switch ($control) {
         'leftStick'     { return ,@(@('leftStick/up'), @('leftStick/left', 'leftStick/down', 'leftStick/right')) }
-        'rightStick'    { return ,(,@('rightStick/left', 'rightStick/right')) }   # the game uses the right stick for tabs/pages (left-right); camera is the mouse
         'leftStick/ud'  { return ,@(@('leftStick/up'), @('leftStick/down')) }
         'leftStick/lr'  { return ,(,@('leftStick/left', 'leftStick/right')) }
-        'rightStick/ud' { return ,@(@('rightStick/up'), @('rightStick/down')) }
-        'rightStick/lr' { return ,(,@('rightStick/left', 'rightStick/right')) }
         'dpad/ud'       { return ,@(@('dpad/up'), @('dpad/down')) }
         'dpad/lr'       { return ,(,@('dpad/left', 'dpad/right')) }
     }
@@ -103,7 +100,7 @@ function Get-ArtBox($path) {
         if ($lo -ge 0 -and ($hi - $lo) -gt $wide) { $wide = $hi - $lo; $wideY = $yy; $wideLo = $lo; $wideHi = $hi }
     }
     $r = @{ W = $b.Width; H = $b.Height; X = $minX; Y = $minY; BW = ($maxX - $minX + 1); BH = ($maxY - $minY + 1); Round = ($best -lt 0.8)
-            CX = (($wideLo + $wideHi) / 2 + 0.5); CY = ($wideY + 0.5) }
+            CX = (($wideLo + $wideHi) / 2 + 0.5); CY = ($wideY + 0.5); RingW = ($wideHi - $wideLo + 1) }
     $b.Dispose()
     return $r
 }
@@ -184,8 +181,19 @@ foreach ($f in Get-ChildItem $Glyphs -Filter "*icon_guide_*.png" | Where-Object 
         $x = $bx + ($bw - $w) / 2; $y = $by + ($bh - $h) / 2
         # every shape sits where the source art sits: centred on the art's bounding box
 
+        $labelControl = $control
+        if ($control -match '^rightStick(/(ud|lr))?$') {
+            # right stick: one ring-sized round cap on the stick ring (arrows drawn above it in the art stay
+            # out of the shape), labelled with the two arrows of the direction pair (tabs: left/right; lists: up/down)
+            $w = [Math]::Min($box.RingW + 2, [Math]::Min($box.W, $box.H) - 4); $h = $w
+            $x = $box.CX - $w / 2; $y = $box.CY - $h / 2
+            if ($x -lt 2) { $x = 2 }; if ($y -lt 2) { $y = 2 }   # big rings (riding menu) must stay inside the canvas
+            if ($x + $w -gt $box.W - 2) { $x = $box.W - 2 - $w }; if ($y + $h -gt $box.H - 2) { $y = $box.H - 2 - $h }
+            $box.Round = $true
+            if ($control -eq 'rightStick') { $labelControl = 'rightStick/lr' }
+        }
         $lb = Draw-Cap $g $x $y $w $h $solid $stroke $box.Round
-        $lb.control = $control
+        $lb.control = $labelControl
         $labels += $lb
     }
     $g.Dispose()
@@ -211,6 +219,8 @@ for ($i = 0; $i -lt $count; $i++) {
 }
 $sg.Dispose(); $sheet.Save($Preview); $sheet.Dispose()
 Write-Host "preview: $Preview"
+
+
 
 
 

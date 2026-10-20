@@ -71,7 +71,7 @@ namespace TeradeaKbm
                 case "leftStick/lr": { var p = KbmInjector.SplitKeep(cfg.LeftStick.Value); return p.Length == 4 ? ForPath(p[2]) + "/" + ForPath(p[3]) : "Move"; }
                 case "rightStick": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? Stick(p[0], p[1], p[2], p[3]) : "Mouse"; }
                 case "rightStick/ud": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? ForPath(p[0]) + ForPath(p[1]) : "Mouse"; }
-                case "rightStick/lr": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? ForPath(p[2]) + " " + ForPath(p[3]) : "Mouse"; }
+                case "rightStick/lr": { var p = KbmInjector.SplitKeep(cfg.RightStick.Value); return p.Length == 4 ? ForPath(p[2]) + ForPath(p[3]) : "Mouse"; }
                 case "leftStick/up": return StickPart(cfg.LeftStick.Value, 0);
                 case "leftStick/down": return StickPart(cfg.LeftStick.Value, 1);
                 case "leftStick/left": return StickPart(cfg.LeftStick.Value, 2);
