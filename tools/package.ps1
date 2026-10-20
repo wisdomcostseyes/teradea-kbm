@@ -1,4 +1,4 @@
-# Builds a release zip for Nexus/GitHub: dist\TeradeaKbm-<version>.zip
+﻿# Builds a release zip for Nexus/GitHub: dist\teradea-kbm-<version>.zip
 # Layout inside the zip mirrors the game folder, so users extract it over the game root. The zip includes the
 # patched BepInEx 6 (tools\bepinex_patched, see README "Modder notes") because stock BepInEx 6 crashes on this
 # Unity version.
@@ -29,9 +29,10 @@ Copy-Item "$root\assets\keys\*.json" "$plugin\keys"
 Copy-Item "$root\README.md" "$stage\TeradeaKbm-README.md"
 Copy-Item "$root\LICENSE" "$stage\TeradeaKbm-LICENSE.txt"
 
-$zip = "$root\dist\TeradeaKbm-$version.zip"
+$zip = "$root\dist\teradea-kbm-$version.zip"
 New-Item -ItemType Directory -Force "$root\dist" | Out-Null
 Remove-Item $zip -Force -ErrorAction SilentlyContinue
 Compress-Archive -Path "$stage\*" -DestinationPath $zip
 Remove-Item $stage -Recurse -Force
 Write-Host "wrote $zip"
+
