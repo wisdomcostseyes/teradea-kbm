@@ -18,7 +18,7 @@ namespace TeradeaKbm
     {
         public const string GUID = "EchoesOfTeradea.KeyboardMouse";
         public const string NAME = "Echoes of Teradea Keyboard & Mouse";
-        public const string VERSION = "0.0.2";
+        public const string VERSION = "0.0.3";
 
         internal static new ManualLogSource Log;
         internal static KbmConfig Cfg;
