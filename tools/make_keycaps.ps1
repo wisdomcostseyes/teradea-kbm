@@ -105,13 +105,50 @@ function Get-ArtBox($path) {
     return $r
 }
 
+# The stick's ring (with its base) as one connected blob: flood-filled from the widest solid row. Rows above the
+# widest row with 3 or fewer solid pixels are cleared first, which cuts the thin stems of the press/direction
+# arrows the art draws above the ring, so they don't join the blob. Red pixels (mine arrows) are ignored.
+function Get-RingBlob($path) {
+    $b = [System.Drawing.Bitmap]::FromFile($path)
+    $w = $b.Width; $h = $b.Height
+    $solid = New-Object 'bool[,]' $w, $h
+    $count = New-Object 'int[]' $h; $lo = New-Object 'int[]' $h; $hi = New-Object 'int[]' $h
+    for ($y = 0; $y -lt $h; $y++) { $lo[$y] = -1; for ($x = 0; $x -lt $w; $x++) {
+        $c = $b.GetPixel($x, $y)
+        if ($c.A -gt 120 -and -not ($c.R -gt $c.G + 40 -and $c.R -gt $c.B + 60)) { $solid[$x, $y] = $true; $count[$y]++; if ($lo[$y] -lt 0) { $lo[$y] = $x }; $hi[$y] = $x }
+    } }
+    $b.Dispose()
+    $wideY = 0; $wide = -1
+    for ($y = 0; $y -lt $h; $y++) { if ($lo[$y] -ge 0 -and ($hi[$y] - $lo[$y]) -gt $wide) { $wide = $hi[$y] - $lo[$y]; $wideY = $y } }
+    for ($y = 0; $y -lt $wideY; $y++) { if ($count[$y] -le 3) { for ($x = 0; $x -lt $w; $x++) { $solid[$x, $y] = $false } } }
+    $seen = New-Object 'bool[,]' $w, $h
+    $stack = New-Object System.Collections.Generic.Stack[int[]]
+    $stack.Push(@($lo[$wideY], $wideY)); $seen[$lo[$wideY], $wideY] = $true
+    $minX = $w; $maxX = -1; $minY = $h; $maxY = -1
+    while ($stack.Count -gt 0) {
+        $p = $stack.Pop(); $x = $p[0]; $y = $p[1]
+        if ($x -lt $minX) { $minX = $x }; if ($x -gt $maxX) { $maxX = $x }; if ($y -lt $minY) { $minY = $y }; if ($y -gt $maxY) { $maxY = $y }
+        foreach ($d in @(@(1,0),@(-1,0),@(0,1),@(0,-1))) {
+            $nx = $x + $d[0]; $ny = $y + $d[1]
+            if ($nx -ge 0 -and $ny -ge 0 -and $nx -lt $w -and $ny -lt $h -and $solid[$nx, $ny] -and -not $seen[$nx, $ny]) { $seen[$nx, $ny] = $true; $stack.Push(@($nx, $ny)) }
+        }
+    }
+    return @{ X = $minX; Y = $minY; W = ($maxX - $minX + 1); H = ($maxY - $minY + 1); CX = (($minX + $maxX + 1) / 2); CY = (($minY + $maxY + 1) / 2) }
+}
+
 # Draw one blank cap at (x,y,w,h); returns the inner label box.
 function Draw-Cap($g, [float]$x, [float]$y, [float]$w, [float]$h, [bool]$solid, [float]$stroke, [bool]$round) {
     $r = if ($round) { [Math]::Min($w, $h) / 2 - 0.01 } else { [Math]::Min($w, $h) * 0.22 }
-    $path = New-RoundRect $x $y $w $h $r
+    # a round cap that isn't square is an ellipse (stick rings are drawn slightly squashed), not a pill
+    $ellipse = $round -and ([Math]::Abs($w - $h) -gt 2)
+    function New-CapPath([float]$px, [float]$py, [float]$pw, [float]$ph, [float]$pr) {
+        if ($ellipse) { $p = New-Object System.Drawing.Drawing2D.GraphicsPath; $p.AddEllipse($px, $py, $pw, $ph); return $p }
+        return New-RoundRect $px $py $pw $ph $pr
+    }
+    $path = New-CapPath $x $y $w $h $r
     if ($solid) {
         foreach ($pass in @(@(3, 10), @(1.5, 16))) {
-            $sp = New-RoundRect ($x - $pass[0] / 2) ($y - $pass[0] / 2 + 1) ($w + $pass[0]) ($h + $pass[0]) ($r + $pass[0] / 2)
+            $sp = New-CapPath ($x - $pass[0] / 2) ($y - $pass[0] / 2 + 1) ($w + $pass[0]) ($h + $pass[0]) ($r + $pass[0] / 2)
             $g.FillPath((New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($pass[1], $Dark))), $sp); $sp.Dispose()
         }
         # the game's world-prompt disc: (41,25,11) at 75% opacity
@@ -119,7 +156,7 @@ function Draw-Cap($g, [float]$x, [float]$y, [float]$w, [float]$h, [bool]$solid, 
     } else {
         foreach ($pass in @(@(3, 14), @(1.5, 22))) {
             $hp = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb($pass[1], $Dark), ($stroke + $pass[0])); $hp.LineJoin = 'Round'
-            $sp = New-RoundRect $x ($y + 1) $w $h $r
+            $sp = New-CapPath $x ($y + 1) $w $h $r
             $g.DrawPath($hp, $sp); $sp.Dispose(); $hp.Dispose()
         }
         $pen = New-Object System.Drawing.Pen($Cream, $stroke); $pen.LineJoin = 'Round'
@@ -160,9 +197,13 @@ foreach ($f in Get-ChildItem $Glyphs -Filter "*icon_guide_*.png" | Where-Object 
         $maxCols = ($cluster | ForEach-Object { $_.Count } | Measure-Object -Maximum).Maximum
         $gap = 1.5
         $m = [Math]::Floor([Math]::Min(($bw - ($maxCols - 1) * $gap) / $maxCols, ($bh - ($nRows - 1) * $gap) / $nRows))
-        $capMax = [Math]::Round(12 * $box.W / 40); if ($m -gt $capMax) { $m = $capMax }   # mini caps scale with the canvas
+        $nCaps = ($cluster | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
+        $capBase = 12; if ($nCaps -le 2) { $capBase = 16 }   # a pair can be bigger than a cluster's mini caps
+        $capMax = [Math]::Round($capBase * $box.W / 40); if ($m -gt $capMax) { $m = $capMax }   # mini caps scale with the canvas
         $totalH = $nRows * $m + ($nRows - 1) * $gap
-        $y0 = ($box.Y + $box.BH / 2) - $totalH / 2; if ($y0 -lt 1) { $y0 = 1 }   # centred on the source art box
+        $centreY = $box.Y + $box.BH / 2   # centred on the source art box...
+        if ($isStick) { $centreY = (Get-RingBlob $f.FullName).CY }   # ...or, on a stick glyph, on the ring (arrows above it don't count)
+        $y0 = $centreY - $totalH / 2; if ($y0 -lt 1) { $y0 = 1 }
         for ($ri = 0; $ri -lt $nRows; $ri++) {
             $cols = $cluster[$ri].Count
             $totalW = $cols * $m + ($cols - 1) * $gap
@@ -183,15 +224,13 @@ foreach ($f in Get-ChildItem $Glyphs -Filter "*icon_guide_*.png" | Where-Object 
 
         $labelControl = $control
         if ($control -match '^rightStick(/(ud|lr))?$' -or $control -match 'StickPress$') {
-            # right stick: one ring-sized round cap on the stick ring (arrows drawn above it in the art stay
-            # out of the shape), labelled with the two arrows of the direction pair (tabs: left/right; lists: up/down)
-            $w = [Math]::Min($box.RingW + 2, [Math]::Min($box.W, $box.H) - 4); $h = $w
-            $x = $box.CX - $w / 2; $y = $box.CY - $h / 2
-            # on the 40x60 prompt slots the ring sits above its base; the eye reads ring+base as one blob level with
-            # the face buttons (centre 40.5), so put the cap there rather than on the ring centre
-            if ($box.W -eq 40 -and $box.H -eq 60) { $y = 40.5 - $h / 2 }
-            if ($x -lt 2) { $x = 2 }; if ($y -lt 2) { $y = 2 }   # big rings (riding menu) must stay inside the canvas
-            if ($x + $w -gt $box.W - 2) { $x = $box.W - 2 - $w }; if ($y + $h -gt $box.H - 2) { $y = $box.H - 2 - $h }
+            # right stick / stick press: one cap exactly on the stick's ring+base blob (the arrows the art draws
+            # above it are not part of the blob), same size and centre; labelled with the direction pair's arrows
+            $rb = Get-RingBlob $f.FullName
+            $w = $rb.W + 2; $h = $rb.H + 2
+            $x = $rb.CX - $w / 2; $y = $rb.CY - $h / 2
+            if ($x -lt 1) { $x = 1 }; if ($y -lt 1) { $y = 1 }   # big rings (riding menu) must stay inside the canvas
+            if ($x + $w -gt $box.W - 1) { $x = $box.W - 1 - $w }; if ($y + $h -gt $box.H - 1) { $y = $box.H - 1 - $h }
             $box.Round = $true
             if ($control -eq 'rightStick') { $labelControl = 'rightStick/lr' }
         }
