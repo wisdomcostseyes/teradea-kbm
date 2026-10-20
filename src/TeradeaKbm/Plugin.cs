@@ -18,7 +18,7 @@ namespace TeradeaKbm
     {
         public const string GUID = "EchoesOfTeradea.KeyboardMouse";
         public const string NAME = "Echoes of Teradea Keyboard & Mouse";
-        public const string VERSION = "0.0.3";
+        public const string VERSION = "0.0.4";
 
         internal static new ManualLogSource Log;
         internal static KbmConfig Cfg;
@@ -115,11 +115,10 @@ namespace TeradeaKbm
         public readonly FixedEntry DpadRight = new FixedEntry("rightArrow");
         public readonly FixedEntry LeftStick = new FixedEntry("w;s;a;d");
         // The right stick is the camera in the field (that's the mouse) and list/sub-tab navigation in menus.
-        // Up/down share the arrow keys with the d-pad (no screen uses both for different things); left/right get
-        // brackets because the Tips/bag screens use d-pad left/right for pages and the stick for sub-tabs at the
-        // same time. These keys are only live outside gameplay (see MenuOnlyGate), so arrows in the field stay
+        // It takes the arrow keys, shared with the d-pad: on the few screens that use both (Tips pages vs sub-tabs)
+        // one press does both, which players preferred to learning bracket keys. These keys are only live outside gameplay (see MenuOnlyGate), so arrows in the field stay
         // quick actions and never tilt the camera. Entries are up;down;left;right.
-        public readonly FixedEntry RightStick = new FixedEntry("upArrow;downArrow;leftBracket;rightBracket");
+        public readonly FixedEntry RightStick = new FixedEntry("upArrow;downArrow;leftArrow;rightArrow");
 
         internal class FixedEntry
         {
