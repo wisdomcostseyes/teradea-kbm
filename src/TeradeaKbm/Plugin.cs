@@ -114,9 +114,12 @@ namespace TeradeaKbm
         public readonly FixedEntry DpadLeft = new FixedEntry("leftArrow");
         public readonly FixedEntry DpadRight = new FixedEntry("rightArrow");
         public readonly FixedEntry LeftStick = new FixedEntry("w;s;a;d");
-        // The right stick is the camera in the field (that's the mouse) and pages/sub-tabs in menus, so it only
-        // gets left/right keys. Entries are up;down;left;right; an empty entry means no key for that direction.
-        public readonly FixedEntry RightStick = new FixedEntry(";;leftBracket;rightBracket");
+        // The right stick is the camera in the field (that's the mouse) and list/sub-tab navigation in menus.
+        // Up/down share the arrow keys with the d-pad (no screen uses both for different things); left/right get
+        // brackets because the Tips/bag screens use d-pad left/right for pages and the stick for sub-tabs at the
+        // same time. These keys are only live outside gameplay (see MenuOnlyGate), so arrows in the field stay
+        // quick actions and never tilt the camera. Entries are up;down;left;right.
+        public readonly FixedEntry RightStick = new FixedEntry("upArrow;downArrow;leftBracket;rightBracket");
 
         internal class FixedEntry
         {

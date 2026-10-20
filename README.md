@@ -67,7 +67,7 @@ To uninstall, delete `BepInEx\plugins\TeradeaKbm`. To remove BepInEx too, delete
 | Camera reset / top-down view | **C** (or middle click) / **V** |
 | Menu / options | **Esc** |
 | Quick actions (d-pad), menu selectors, page switching | Arrow keys |
-| Sub-tabs / pages (right stick in menus) | **[** / **]** |
+| Right stick in menus: lists up / down, sub-tabs left / right | **↑** / **↓**, **[** / **]** |
 | Walk instead of run | hold **Ctrl** |
 | Release the mouse cursor | hold **Alt** |
 

@@ -218,7 +218,7 @@ namespace TeradeaKbm
                 float sy = cfg.MouseInvertY.Value ? -s : s;
                 string proc = string.Format(System.Globalization.CultureInfo.InvariantCulture, "scaleVector2(x={0},y={1})", s, sy);
                 look.AddBinding("<Mouse>/delta", null, proc, null);
-                MouseLookGate.Register(look, look.bindings.Count - 1);
+                MouseLookGate.RegisterGameplayOnly(look, look.bindings.Count - 1);
                 added++;
             }
 
@@ -272,9 +272,16 @@ namespace TeradeaKbm
                     {
                         var syntax = action.AddCompositeBinding("2DVector(mode=2)", b.interactions, null);
                         string[] partNames = { "Up", "Down", "Left", "Right" };
+                        int parts = 0;
                         for (int k = 0; k < 4; k++)
                         {
-                            if (!string.IsNullOrEmpty(keys[k])) syntax = syntax.With(partNames[k], keys[k], null);
+                            if (!string.IsNullOrEmpty(keys[k])) { syntax = syntax.With(partNames[k], keys[k], null); parts++; }
+                        }
+                        if (control == "rightStick")
+                        {
+                            // menu-only: the right stick's keys share the arrows with the d-pad, so switch them off in the field
+                            int count = action.bindings.Count;
+                            for (int k = count - parts; k < count; k++) MouseLookGate.Register(action, k);
                         }
                         added++;
                     }
@@ -408,36 +415,47 @@ namespace TeradeaKbm
     }
 
     /// <summary>
-    /// The game feeds its mouse-look action into menus too (tab strips page with it), so the mouse-delta
-    /// bindings are only live while a gameplay action set is current.
+    /// Bindings that are only live in one half of the game. Mouse-look delta runs only while a gameplay action
+    /// set is current (the game feeds its look action into menu tab strips too). The right stick's keyboard
+    /// composite runs only outside gameplay (its arrows are shared with the d-pad quick actions in the field).
     /// </summary>
     internal static class MouseLookGate
     {
-        private struct Entry { public InputAction Action; public int Index; }
+        private struct Entry { public InputAction Action; public int Index; public bool GameplayOnly; }
         private static readonly List<Entry> _entries = new List<Entry>();
-        private static bool _enabled = true;
+        private static bool _gameplay = true;
+        private static bool _applied;
 
+        /// <summary>Register a binding that is live only during gameplay (mouse look).</summary>
+        public static void RegisterGameplayOnly(InputAction action, int bindingIndex)
+        {
+            _entries.Add(new Entry { Action = action, Index = bindingIndex, GameplayOnly = true });
+        }
+
+        /// <summary>Register a binding that is live only outside gameplay (right-stick keys in menus).</summary>
         public static void Register(InputAction action, int bindingIndex)
         {
-            _entries.Add(new Entry { Action = action, Index = bindingIndex });
+            _entries.Add(new Entry { Action = action, Index = bindingIndex, GameplayOnly = false });
         }
 
         public static void Tick()
         {
             if (_entries.Count == 0) return;
-            bool want = CursorControl.InGameplayMap();
-            if (want == _enabled) return;
-            _enabled = want;
+            bool gameplay = CursorControl.InGameplayMap();
+            if (_applied && gameplay == _gameplay) return;
+            _gameplay = gameplay;
+            _applied = true;
             foreach (var e in _entries)
             {
                 try
                 {
-                    if (want) e.Action.RemoveBindingOverride(e.Index);
+                    bool live = e.GameplayOnly ? gameplay : !gameplay;
+                    if (live) e.Action.RemoveBindingOverride(e.Index);
                     else e.Action.ApplyBindingOverride(e.Index, "");
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Log.LogDebug("Mouse look gate failed: " + ex.Message);
+                    Plugin.Log.LogDebug("Binding gate failed: " + ex.Message);
                 }
             }
         }

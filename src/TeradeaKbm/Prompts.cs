@@ -94,7 +94,8 @@ namespace TeradeaKbm
         private static string Stick(string u, string d, string l, string r)
         {
             string lu = ForPath(First(u)), ld = ForPath(First(d)), ll = ForPath(First(l)), lr = ForPath(First(r));
-            if (lu == "↑") return "↑↓←→";
+            if (lu == "↑" && ll == "←") return "↑↓←→";
+            if (lu == "↑" && ll == "[") return "↑↓[]";                  // right stick: arrows up/down, brackets left/right
             if (lu.Length == 0 && ld.Length == 0) return ll + " " + lr; // left/right only (e.g. "[ ]")
             string s = lu + ll + ld + lr;
             return s.Length <= 4 ? s : lu + "/" + ld + "/" + ll + "/" + lr;
