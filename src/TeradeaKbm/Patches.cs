@@ -32,6 +32,18 @@ namespace TeradeaKbm
                     Plugin.Log.LogError("Prompt patches failed: " + e);
                 }
             }
+            if (Plugin.Cfg.CircleMenuWasd.Value)
+            {
+                try
+                {
+                    Plugin.HarmonyInstance.PatchAll(typeof(CircleMenuPatches));
+                    Plugin.Log.LogInfo("Circle menu patch installed (WASD picks).");
+                }
+                catch (Exception e)
+                {
+                    Plugin.Log.LogError("Circle menu patch failed: " + e);
+                }
+            }
             Ready = true;
         }
 

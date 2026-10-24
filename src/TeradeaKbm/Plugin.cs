@@ -18,7 +18,7 @@ namespace TeradeaKbm
     {
         public const string GUID = "EchoesOfTeradea.KeyboardMouse";
         public const string NAME = "Echoes of Teradea Keyboard & Mouse";
-        public const string VERSION = "0.0.4";
+        public const string VERSION = "0.0.5";
 
         internal static new ManualLogSource Log;
         internal static KbmConfig Cfg;
@@ -95,6 +95,7 @@ namespace TeradeaKbm
 
         public readonly ConfigEntry<string> WalkModifierKey;
         public readonly ConfigEntry<bool> SuppressCancelOnMenuKey;
+        public readonly ConfigEntry<bool> CircleMenuWasd;
 
         public readonly ConfigEntry<string> ButtonSouth;
         public readonly ConfigEntry<string> ButtonEast;
@@ -172,6 +173,8 @@ namespace TeradeaKbm
                 "Hold this key to walk instead of run (keyboard movement is always full-magnitude). Empty disables.");
             SuppressCancelOnMenuKey = f.Bind("Keyboard", "SuppressCancelOnMenuKey", true,
                 "When a key is bound to both B (cancel) and Start (menu), ignore the B press in the field on the frame the menu key fires.");
+            CircleMenuWasd = f.Bind("Keyboard", "CircleMenuWasd", true,
+                "Pick in the hold-open circle menus (dowsing wheel, riding-animal wheel) with WASD instead of the right-stick arrow keys, and show the WASD glyph in them. The wheel itself is held open with the d-pad key (right arrow for dowsing).");
 
             ButtonSouth     = f.Bind("Keys", "A (buttonSouth)",       "f;enter;<Mouse>/leftButton", "Confirm / interact / use");
             ButtonEast      = f.Bind("Keys", "B (buttonEast)",        "escape;<Mouse>/rightButton", "Cancel / back / dismount");

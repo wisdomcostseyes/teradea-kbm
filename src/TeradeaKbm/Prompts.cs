@@ -141,7 +141,8 @@ namespace TeradeaKbm
             {
                 switch (spriteName[rm + 24])
                 {
-                    case '1': case '5': return "rightStick";
+                    // The circle menus pick with the right stick; with Keyboard.CircleMenuWasd they pick with WASD (CircleMenuPatches).
+                    case '1': case '5': return Plugin.Cfg != null && Plugin.Cfg.CircleMenuWasd.Value ? "leftStick" : "rightStick";
                     case '2': case '3': case '4': return "rightTrigger";
                     default: return null;
                 }
@@ -248,9 +249,20 @@ namespace TeradeaKbm
             return layout;
         }
 
+        /// <summary>Key-image file name for a glyph: the cleaned sprite name, or a variant of it when an option
+        /// changes what the glyph stands for (the circle menus' stick glyph becomes the WASD cluster).</summary>
+        public static string CustomNameFor(string cleanName)
+        {
+            if (cleanName != null && Plugin.Cfg != null && Plugin.Cfg.CircleMenuWasd.Value
+                && (cleanName.EndsWith("ridingmenu_icon_guide_001", StringComparison.OrdinalIgnoreCase)
+                    || cleanName.EndsWith("ridingmenu_icon_guide_005", StringComparison.OrdinalIgnoreCase)))
+                return cleanName + "_wasd";
+            return cleanName;
+        }
+
         public static GlyphLayout LayoutFor(string originalName)
         {
-            string name = CleanSpriteName(originalName);
+            string name = CustomNameFor(CleanSpriteName(originalName));
             if (string.IsNullOrEmpty(name)) return null;
             if (_layouts.TryGetValue(name, out var cached)) return cached;
             GlyphLayout layout = null;
@@ -381,7 +393,7 @@ namespace TeradeaKbm
         public static Sprite ShapeFor(Sprite like)
         {
             if (like == null) return null;
-            string name = CleanSpriteName(like.name);
+            string name = CustomNameFor(CleanSpriteName(like.name));
             if (_custom.TryGetValue(name, out var sp) && sp != null) return sp;
             if (_customMissing.Contains(name)) return null;
             string path = System.IO.Path.Combine(CustomDir, name + ".png");
