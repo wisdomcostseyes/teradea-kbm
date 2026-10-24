@@ -443,6 +443,11 @@ namespace TeradeaKbm
             if (_entries.Count == 0) return;
             bool gameplay = CursorControl.InGameplayMap();
             if (_applied && gameplay == _gameplay) return;
+            // Applying or removing a binding override re-resolves every binding in the asset, and the Input System
+            // cancels actions that are in progress when that happens. The field's hold-to-keep-open wheels (dowsing)
+            // switch action sets the frame they open, while the player still holds the d-pad key that opened them;
+            // switching here on that frame reads as a release and the wheel closes at once. Wait for a quiet keyboard.
+            if (AnyKeyHeld()) return;
             _gameplay = gameplay;
             _applied = true;
             foreach (var e in _entries)
@@ -457,6 +462,19 @@ namespace TeradeaKbm
                 {
                     Plugin.Log.LogDebug("Binding gate failed: " + ex.Message);
                 }
+            }
+        }
+
+        private static bool AnyKeyHeld()
+        {
+            try
+            {
+                var kb = Keyboard.current;
+                return kb != null && kb.anyKey.isPressed;
+            }
+            catch
+            {
+                return false;
             }
         }
     }
